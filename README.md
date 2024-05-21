@@ -45,6 +45,7 @@ L'applicazione è progettata per aiutare gli utenti a pianificare i loro investi
 
 Questa applicazione è utile per gli investitori che desiderano organizzare e ottimizzare i loro portafogli in base ai pagamenti dei dividendi, fornendo una visione chiara e dettagliata delle informazioni rilevanti.
 
+Provala ora qui https://firo-plandividendday.streamlit.app/
 
 <a href="https://www.buymeacoffee.com/firo"><img src="https://img.buymeacoffee.com/button-api/?text=Buy me a coffee&emoji=☕&slug=firo&button_colour=FFDD00&font_colour=000000&font_family=Cookie&outline_colour=000000&coffee_colour=ffffff" /></a>
 

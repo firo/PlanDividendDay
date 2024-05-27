@@ -1,7 +1,7 @@
 import streamlit as st
 import yfinance as yf
 import pandas as pd
-from datetime import datetime
+from datetime import datetime, timedelta
 from streamlit_extras.buy_me_a_coffee import button 
 
 # Titolo dell'app
@@ -14,6 +14,11 @@ Questa applicazione è realizzata a scopo didattico per testare le funzionalità
 """)
 
 button(username="firo", floating=True, width=221)
+
+# Sidebar per parametri di acquisto e vendita
+st.sidebar.header("Parametri di Acquisto e Vendita")
+acquisto = st.sidebar.slider('Giorni prima del dividendo per acquisto', -60, 60, -10)
+vendita = st.sidebar.slider('Giorni dopo il dividendo per vendita', -60, 60, 20)
 
 # Funzione per ottenere le date di stacco delle cedole e il nome dell'azienda
 def get_dividend_dates(tickers):
@@ -40,6 +45,19 @@ def get_current_price(ticker):
         st.error(f"Errore nel recupero del prezzo corrente per {ticker}: {e}")
         return None
 
+# Funzione per ottenere il prezzo di un titolo in una data specifica
+def get_price_on_date(ticker, date):
+    try:
+        stock = yf.Ticker(ticker)
+        history = stock.history(start=date - timedelta(days=1), end=date + timedelta(days=1))
+        if not history.empty:
+            return history['Close'].iloc[0]
+        else:
+            return None
+    except Exception as e:
+        st.error(f"Errore nel recupero del prezzo per {ticker} alla data {date}: {e}")
+        return None
+
 # Input per i ticker dei titoli azionari o il caricamento di un file CSV con i ticker
 ticker_source = st.radio('Scegli la fonte dei ticker:', ['Inserimento manuale', 'Caricamento da file CSV'])
 
@@ -63,8 +81,8 @@ if tickers:
     dividend_dates_df = get_dividend_dates(tickers)
     
     if not dividend_dates_df.empty:
-        # Converte la colonna delle date in datetime
-        dividend_dates_df['Date'] = pd.to_datetime(dividend_dates_df['Date'])
+        # Converte la colonna delle date in datetime senza fuso orario (offset-naive)
+        dividend_dates_df['Date'] = pd.to_datetime(dividend_dates_df['Date']).dt.tz_localize(None)
         
         # Aggiungi colonna del mese e giorno
         dividend_dates_df['Mese'] = dividend_dates_df['Date'].dt.strftime('%B')
@@ -103,8 +121,16 @@ if tickers:
         # Calcola il delta percentuale tra il valore corrente del dividendo e la media degli ultimi 10 anni
         current_year_dividends_df['Delta (%)'] = ((current_year_dividends_df['Dividendi'] - current_year_dividends_df['Media 10 anni']) / current_year_dividends_df['Media 10 anni']) * 100
         
+        # Calcola il guadagno in base ai parametri di acquisto e vendita
+        current_year_dividends_df['Guadagno'] = current_year_dividends_df.apply(lambda row: (
+            (get_price_on_date(row['Ticker'], row['Date'] + timedelta(days=vendita)) -
+            get_price_on_date(row['Ticker'], row['Date'] + timedelta(days=acquisto)))
+            if get_price_on_date(row['Ticker'], row['Date'] + timedelta(days=vendita)) is not None and
+               get_price_on_date(row['Ticker'], row['Date'] + timedelta(days=acquisto)) is not None else None
+        ) if datetime.now().replace(tzinfo=None) > row['Date'] + timedelta(days=vendita) else None, axis=1)
+        
         # Seleziona e ordina le colonne necessarie
-        current_year_dividends_df = current_year_dividends_df[['Mese', 'Giorno', 'Ticker', 'Azienda', 'Dividendi', 'Rendimento (%)', 'Media 10 anni', 'Delta (%)']]
+        current_year_dividends_df = current_year_dividends_df[['Mese', 'Giorno', 'Ticker', 'Azienda', 'Dividendi', 'Rendimento (%)', 'Media 10 anni', 'Delta (%)', 'Guadagno']]
         
         # Mostra la tabella con le date di stacco delle cedole
         st.write(f"Date di stacco delle cedole raggruppate per mese per l'anno {current_year}:")

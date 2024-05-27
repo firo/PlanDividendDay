@@ -2,7 +2,7 @@ import streamlit as st
 import yfinance as yf
 import pandas as pd
 from datetime import datetime, timedelta
-from streamlit_extras.buy_me_a_coffee import button 
+from streamlit_extras.buy_me_a_coffee import button
 
 # Titolo dell'app
 st.title('Pianificazione dei Dividendi di Titoli Azionari')
@@ -122,12 +122,25 @@ if tickers:
         current_year_dividends_df['Delta (%)'] = ((current_year_dividends_df['Dividendi'] - current_year_dividends_df['Media 10 anni']) / current_year_dividends_df['Media 10 anni']) * 100
         
         # Calcola il guadagno in base ai parametri di acquisto e vendita
-        current_year_dividends_df['Guadagno'] = current_year_dividends_df.apply(lambda row: (
-            (get_price_on_date(row['Ticker'], row['Date'] + timedelta(days=vendita)) -
-            get_price_on_date(row['Ticker'], row['Date'] + timedelta(days=acquisto)))
-            if get_price_on_date(row['Ticker'], row['Date'] + timedelta(days=vendita)) is not None and
-               get_price_on_date(row['Ticker'], row['Date'] + timedelta(days=acquisto)) is not None else None
-        ) if datetime.now().replace(tzinfo=None) > row['Date'] + timedelta(days=vendita) else None, axis=1)
+        def calcola_guadagno(row):
+            try:
+                data_dividendo = row['Date']
+                prezzo_acquisto = get_price_on_date(row['Ticker'], data_dividendo + timedelta(days=acquisto))
+                prezzo_vendita = get_price_on_date(row['Ticker'], data_dividendo + timedelta(days=vendita))
+
+                if prezzo_acquisto is not None and prezzo_vendita is not None:
+                    guadagno = prezzo_vendita - prezzo_acquisto
+                    return guadagno
+                else:
+                    return None
+            except Exception as e:
+                st.error(f"Errore nel calcolo del guadagno per {row['Ticker']} alla data {data_dividendo}: {e}")
+                return None
+        
+        # Applicare la funzione calcola_guadagno
+        current_year_dividends_df['Guadagno'] = current_year_dividends_df.apply(
+            lambda row: calcola_guadagno(row) if datetime.now().replace(tzinfo=None) > row['Date'] + timedelta(days=vendita) else None, axis=1
+        )
         
         # Seleziona e ordina le colonne necessarie
         current_year_dividends_df = current_year_dividends_df[['Mese', 'Giorno', 'Ticker', 'Azienda', 'Dividendi', 'Rendimento (%)', 'Media 10 anni', 'Delta (%)', 'Guadagno']]
@@ -138,4 +151,4 @@ if tickers:
     else:
         st.write("Nessuna data di stacco delle cedole trovata.")
 else:
-    st.write("Inserisci i ticker manualmente o carica un file CSV.")
+    st.write

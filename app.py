@@ -17,7 +17,7 @@ button(username="firo", floating=True, width=221)
 
 # Sidebar per parametri di acquisto e vendita
 st.sidebar.header("Parametri di Acquisto e Vendita")
-acquisto = st.sidebar.slider('Giorni prima del dividendo per acquisto', -60, 60, -10)
+acquisto = st.sidebar.slider('Giorni prima del dividendo per acquisto', -60, 60, -30)
 vendita = st.sidebar.slider('Giorni dopo il dividendo per vendita', -60, 60, 20)
 
 # Funzione per ottenere le date di stacco delle cedole e il nome dell'azienda
@@ -151,4 +151,5 @@ if tickers:
     else:
         st.write("Nessuna data di stacco delle cedole trovata.")
 else:
-    st.write
+    st.write("Inserisci dei ticker per procedere.")
+

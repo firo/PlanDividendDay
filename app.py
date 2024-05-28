@@ -147,14 +147,21 @@ if tickers:
         )
 
         # Calcola il guadagno percentuale solo per le righe dove `guadagno_assoluto` non è None
-        current_year_dividends_df['Guadagno (%)'] = guadagno_assoluto / current_year_dividends_df['Valore Corrente'] * 100
+        if guadagno_assoluto is not None:
+            current_year_dividends_df['Guadagno (%)'] = guadagno_assoluto / current_year_dividends_df['Valore Corrente'] * 100
+        else: 
+            guadagno_assoluto = 'None'
 
         # Aggiungi le date di acquisto e vendita
         current_year_dividends_df['Acquisto'] = (current_year_dividends_df['Date'] + timedelta(days=acquisto)).dt.strftime('%Y-%m-%d')
         current_year_dividends_df['Vendita'] = (current_year_dividends_df['Date'] + timedelta(days=vendita)).dt.strftime('%Y-%m-%d')
         
+        # Seleziona e ordina le colonne necessarie
+        current_year_dividends_df = current_year_dividends_df[['Mese', 'Giorno', 'Azienda', 'Dividendi', 'Media 10 anni', 'Rendimento (%)', 'Acquisto', 'Vendita', 'Guadagno (%)']]
+        
         # Visualizza la tabella con i risultati
         st.dataframe(current_year_dividends_df)
+        
     else:
         st.warning('Nessuna data di dividendi trovata per i ticker inseriti.')
 else:

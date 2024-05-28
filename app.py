@@ -146,23 +146,16 @@ if tickers:
             lambda row: calcola_guadagno(row) if datetime.now().replace(tzinfo=None) > row['Date'] + timedelta(days=vendita) else None, axis=1
         )
 
-        # Calcola il guadagno percentuale
-        current_year_dividends_df['Guadagno (%)'] = (guadagno_assoluto / current_year_dividends_df['Valore Corrente']) * 100
+        # Calcola il guadagno percentuale solo per le righe dove `guadagno_assoluto` non è None
+        current_year_dividends_df['Guadagno (%)'] = guadagno_assoluto / current_year_dividends_df['Valore Corrente'] * 100
 
         # Aggiungi le date di acquisto e vendita
-        current_year_dividends_df['Acquisto'] = (current_year_dividends_df['Date'] + timedelta(days=acquisto)).dt.strftime('%d/%m')
-        current_year_dividends_df['Vendita'] = (current_year_dividends_df['Date'] + timedelta(days=vendita)).dt.strftime('%d/%m')
-
-        # Seleziona e ordina le colonne necessarie
-        current_year_dividends_df = current_year_dividends_df[['Mese', 'Giorno', 'Azienda', 'Dividendi', 'Media 10 anni', 'Rendimento (%)', 'Acquisto', 'Vendita', 'Guadagno (%)']]
+        current_year_dividends_df['Acquisto'] = (current_year_dividends_df['Date'] + timedelta(days=acquisto)).dt.strftime('%Y-%m-%d')
+        current_year_dividends_df['Vendita'] = (current_year_dividends_df['Date'] + timedelta(days=vendita)).dt.strftime('%Y-%m-%d')
         
-        # Mostra la tabella con le date di stacco delle cedole
-        st.write(f"Date di stacco delle cedole raggruppate per mese per l'anno {current_year}:")
+        # Visualizza la tabella con i risultati
         st.dataframe(current_year_dividends_df)
-
-        st.write("Il Rendimento (%) è riferito al dividendo.")
-        st.write("Acquisto e Vendita sono le date di ingresso e uscita, qualora la data del dividendo sia nel passato.")
     else:
-        st.write("Nessuna data di stacco delle cedole trovata.")
+        st.warning('Nessuna data di dividendi trovata per i ticker inseriti.')
 else:
-    st.write("Inserisci dei ticker per procedere.")
+    st.warning('Inserisci uno o più ticker per continuare.')

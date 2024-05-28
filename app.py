@@ -157,7 +157,6 @@ if tickers:
 
         current_year_dividends_df['Guadagno (%)'] = (guadagno_assoluto / valore_corrente) * 100
 
-        #correggere shift date
         #st.write('--> time delta shift: ', acquisto)
         #st.write('--> time delta shift: ', vendita)
         #st.write('--> Dividend Day: ', (dividend_dates_df['Date']).dt.strftime('%d/%m/%y'))

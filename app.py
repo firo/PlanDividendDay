@@ -132,7 +132,7 @@ if tickers:
                 prezzo_acquisto = get_price_on_date(row['Ticker'], data_dividendo + timedelta(days=acquisto))
                 prezzo_vendita = get_price_on_date(row['Ticker'], data_dividendo + timedelta(days=vendita))
                 
-                if prezzo_acquisto is not None && prezzo_vendita is not None:
+                if prezzo_acquisto is not None and prezzo_vendita is not None:
                     guadagno = prezzo_vendita - prezzo_acquisto
                     return guadagno
                 else:
